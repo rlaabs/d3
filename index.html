@@ -6,8 +6,57 @@
 	<script type="text/javascript" src="/scripts/d3.js"></script>
 	<script type="text/javascript" src="/scripts/d3-jetpack.js"></script>
     <script type="text/javascript" src="/scripts/d3-starterkit.js"></script>
+
+ <style type="text/css">
+        body {
+            font: 10px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape_rendering: crispEdges;
+        }
+
+        .dot {
+            stroke: #000;
+        }
+
+  </style>
 </head>
+
 <body>
+
+	<script type="text/javascript">
+	d3.tsv("iris.tsv", function(error, data){
+	    var c = d3.conventions({
+	        margin: {top:20, right: 20, bottom: 30, left: 40},
+	        width : 900,
+	        height: 450,
+	    })
+
+	    c.x.domain(d3.extent(data, ƒ('sepalWidth'))).nice();
+	    c.y.domain(d3.extent(data, ƒ('sepalLength'))).nice();
+
+	    //draws both axis
+	    c.drawAxis()
+
+	    //add x axis label
+	    //c.svg.select('.x.axis')
+
+	    // add y axis label
+
+	    // draw (dot) datapoints
+	    c.svg.dataAppend(data, "circle.dot")
+	        .attr("r", 3.5)
+	        .attr("cx", ƒ('sepalWidth', c.x))
+	        .attr("cy", ƒ('sepalLength', c.y))
+	        .style("fill", ƒ('species', c.color))
+
+	});
+
+	</script>
 
 
 </body>
