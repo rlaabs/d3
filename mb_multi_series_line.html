@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title> https://bl.ocks.org/mbostock/3884955</title>
+	<script type="text/javascript" src="/scripts/d3.js"></script>
+	<script type="text/javascript" src="/scripts/d3-jetpack.js"></script>
+    <script type="text/javascript" src="/scripts/d3-starterkit.js"></script>
+<style type="text/css">
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+	d3.tsv("data.tsv", function(error, data){
+
+	if (error) throw error;
+
+	var margin = {top: 20, right: 50, bottom: 30, left: 50},
+		width = 960 - margin.left - margin.right,
+		height = 500 - margin.top -margin.bottom;
+
+	var parseDate = d3.time.format("%Y%m%d").parse;
+
+	// set the color domain
+	var color = d3.scale.category10();
+	//returns new york, sf austin
+	color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+
+	//parse data
+	  data.forEach(function(d) {
+	    d.date = parseDate(d.date);
+	  });
+
+
+	//returns the cities and their date, temo, name
+	var cities = color.domain().map(function(name){
+		return {
+			name: name,
+			values: data.map(function(d){
+				return { date: d.date, temperature: +d[name]};
+			})
+		};
+	});
+
+
+	//x sscale
+	var x = d3.time.scale()
+		.range([0, width])
+		.domain(d3.extent(data, function(d){ return d.date; }));
+	//x axis
+	var xAxis = d3.svg.axis()
+		.scale(x)
+		.orient("bottom");
+
+
+	//y scale
+	var y = d3.scale.linear()
+	    .range([height, 0])
+	    .domain([
+		    d3.min(cities, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
+		    d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
+  		]);
+	// y axis 
+
+	//define svg selection
+	var svg = d3.select("body").append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	//draw x axis
+	svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+
+   var line = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.temperature); });
+
+   //define the selection fot the city lines
+   var city = svg.selectAll(".city")
+   		.data(cities)
+   		.enter().append("g")
+   		.attr("class", "city");
+
+   //draw the city line
+   city.append("path")
+   	.attr("class", "line")
+   	.attr("d", function(d){ return line(d.values); })
+   	.style("stroke", function(d){ return color(d.name); });
+
+
+
+
+});//
+
+</script>
+
+
+</body>
+</html>
