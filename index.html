@@ -8,20 +8,7 @@
     <script type="text/javascript" src="/scripts/d3-starterkit.js"></script>
 
  <style type="text/css">
-        body {
-            font: 10px sans-serif;
-        }
-
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: #000;
-            shape_rendering: crispEdges;
-        }
-
-        .dot {
-            stroke: #000;
-        }
+       
 
   </style>
 </head>
@@ -29,32 +16,76 @@
 <body>
 
 	<script type="text/javascript">
-	d3.tsv("iris.tsv", function(error, data){
-	    var c = d3.conventions({
-	        margin: {top:20, right: 20, bottom: 30, left: 40},
-	        width : 900,
-	        height: 450,
-	    })
 
-	    c.x.domain(d3.extent(data, ƒ('sepalWidth'))).nice();
-	    c.y.domain(d3.extent(data, ƒ('sepalLength'))).nice();
+		d3.csv("tweetdata.csv", function(error, data){
 
-	    //draws both axis
-	    c.drawAxis()
+			var margin = {top: 20, right: 80, bottom: 30, left: 50},
+				width = 960 - margin.left - margin.top,
+				height = 500 - margin.top - margin.bottom
 
-	    //add x axis label
-	    //c.svg.select('.x.axis')
+			//define x and y scales
+			xScale = d3.scale.linear()
+				.domain(d3.extent(data, function(d) { return d.day; })).nice()
+				.range([0, width]);
 
-	    // add y axis label
+		
 
-	    // draw (dot) datapoints
-	    c.svg.dataAppend(data, "circle.dot")
-	        .attr("r", 3.5)
-	        .attr("cx", ƒ('sepalWidth', c.x))
-	        .attr("cy", ƒ('sepalLength', c.y))
-	        .style("fill", ƒ('species', c.color))
+			yScale = d3.scale.linear()
+				.domain([0, d3.max(data, function(d) { return d.retweets; })])
+				.range([height,0]);
 
-	});
+
+			// define x and y axis
+			var xAxis = d3.svg.axis()
+				.scale(xScale)
+				.orient("bottom");
+
+			var yAxis = d3.svg.axis()
+				.scale(yScale)
+				.orient('left');
+
+			//define svg canvas
+			var svg = d3.select("body").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			//draw x axis
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+				.call(xAxis);
+
+			//draw y axis 
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis);
+
+			// line generator
+			var line = d3.svg.line()
+				.interpolate("basis")
+				.x(function(d){ return xScale(d.day); })
+				.y(function(d){ return yScale(d.retweets); });
+
+			svg.append('svg:path')
+                        .attr('d', line(data))
+                        .attr('stroke', 'green')
+                        .attr('stroke-width', 2)
+                        .attr('fill', 'none');
+
+
+	
+
+
+			
+
+
+
+
+		}); //END
+
+
 
 	</script>
 
